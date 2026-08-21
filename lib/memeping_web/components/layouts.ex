@@ -41,7 +41,7 @@ defmodule MemePingWeb.Layouts do
     <header class="navbar px-4 sm:px-6 lg:px-8 border-b border-base-300">
       <div class="flex-1 flex items-center gap-6">
         <a href="/" class="flex items-center gap-2 font-semibold">
-          <img src={~p"/images/logo.svg"} width="28" /> MemePing
+          <img src={~p"/images/logo.png"} width="28" /> MemePing
         </a>
         <nav :if={@current_user} class="tabs tabs-boxed">
           <a href="/notifiers" class={["tab", @active_tab == :notifiers && "tab-active"]}>
