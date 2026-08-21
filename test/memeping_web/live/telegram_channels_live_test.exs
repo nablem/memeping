@@ -102,7 +102,7 @@ defmodule MemePingWeb.TelegramChannelsLiveTest do
     |> render_submit()
 
     live_view
-    |> element("button", "Send test message")
+    |> element("button", "Test message")
     |> render_click()
 
     assert render(live_view) =~ "Test message sent to Main calls"
