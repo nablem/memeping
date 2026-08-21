@@ -1,5 +1,9 @@
 <Layouts.flash_group flash={@flash} />
 
+<script :for={data <- structured_data()} type="application/ld+json">
+  {raw(Jason.encode!(data))}
+</script>
+
 <div class="min-h-screen bg-base-100">
   <header class="px-4 py-5 sm:px-6 lg:px-8 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2">
