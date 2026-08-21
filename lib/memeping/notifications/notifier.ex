@@ -9,7 +9,7 @@ defmodule MemePing.Notifications.Notifier do
 
   @type t :: %__MODULE__{}
 
-  @chains ["solana", "ethereum", "base", "bsc"]
+  @chains ["solana", "ethereum", "base", "bsc", "tron"]
 
   schema "notifiers" do
     field :name, :string

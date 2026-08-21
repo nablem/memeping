@@ -84,6 +84,54 @@
     </div>
   </section>
 
+  <section class="px-4 sm:px-6 lg:px-8 pb-20">
+    <div class="mx-auto max-w-5xl space-y-10">
+      <div class="text-center space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-semibold">Connect in seconds, no signup required</h2>
+        <p class="text-base-content/70 max-w-2xl mx-auto">
+          Log in by signing a message with MetaMask or Phantom — no email, no password, no forms.
+          You can start receiving your first calls within seconds of connecting.
+        </p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="rounded-box border border-base-300 p-6 flex items-center gap-4">
+          <.icon name="hero-link" class="size-8 text-primary shrink-0" />
+          <div>
+            <h3 class="font-semibold">MetaMask</h3>
+            <p class="text-sm text-base-content/70">Sign in with any EVM-compatible wallet.</p>
+          </div>
+        </div>
+        <div class="rounded-box border border-base-300 p-6 flex items-center gap-4">
+          <.icon name="hero-link" class="size-8 text-primary shrink-0" />
+          <div>
+            <h3 class="font-semibold">Phantom</h3>
+            <p class="text-sm text-base-content/70">Sign in with your Solana wallet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-box bg-base-200 p-6 text-center space-y-2">
+        <h3 class="font-semibold">No subscriptions, ever</h3>
+        <p class="text-sm text-base-content/70 max-w-2xl mx-auto">
+          Plans are prepaid per 30-day period, with no recurring billing and no auto-renewal.
+          Pay upfront, use it for as long as you chose, then renew only if you want to.
+        </p>
+      </div>
+
+      <div class="text-center space-y-3">
+        <h3 class="font-semibold">Supported chains</h3>
+        <div class="flex flex-wrap justify-center gap-2">
+          <span class="badge badge-secondary text-primary">Solana</span>
+          <span class="badge badge-secondary text-primary">Ethereum</span>
+          <span class="badge badge-secondary text-primary">Base</span>
+          <span class="badge badge-secondary text-primary">BSC</span>
+          <span class="badge badge-secondary text-primary">Tron</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="plans" class="px-4 sm:px-6 lg:px-8 pb-24">
     <div class="mx-auto max-w-5xl space-y-8">
       <div class="text-center space-y-2">
@@ -101,7 +149,9 @@
           <div>
             <h3 class="text-lg font-semibold">{plan.name}</h3>
             <p class="text-2xl font-semibold mt-2">{price_label(plan)}</p>
-            <p :if={plan.duration_days} class="text-xs opacity-70">prepaid, no auto-renewal</p>
+            <p class="text-xs opacity-70">
+              {if plan.duration_days, do: "prepaid, no auto-renewal", else: "\u00A0"}
+            </p>
           </div>
 
           <ul class="text-sm space-y-1 flex-1">

@@ -37,7 +37,9 @@ defmodule MemePingWeb.PlansLive do
 
             <p class="text-2xl font-semibold mt-2">{price_label(plan)}</p>
 
-            <p :if={plan.duration_days} class="text-xs opacity-70">prepaid, no auto-renewal</p>
+            <p class="text-xs opacity-70">
+              {if plan.duration_days, do: "prepaid, no auto-renewal", else: "\u00A0"}
+            </p>
           </div>
 
           <ul class="text-sm space-y-1 flex-1">
