@@ -44,7 +44,8 @@ defmodule MemePingWeb.Layouts do
         <div class="navbar bg-base-100 border-b border-base-300 lg:hidden">
           <label for="app-drawer" class="btn btn-square btn-ghost" aria-label="Open menu">
             <.icon name="hero-bars-3" class="size-5" />
-          </label> <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
+          </label>
+          <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
         </div>
 
         <main class="flex-1 px-4 py-8 sm:px-6 lg:px-10">
@@ -94,7 +95,7 @@ defmodule MemePingWeb.Layouts do
         </aside>
       </div>
     </div>
-     <.flash_group flash={@flash} />
+    <.flash_group flash={@flash} />
     """
   end
 
