@@ -9,22 +9,19 @@ defmodule MemePingWeb.NotifiersLive do
   def render(%{live_action: :index} = assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user} active_tab={:notifiers}>
-      <div class="flex items-center justify-between mb-4">
-        <div>
+      <div class="flex items-center justify-between gap-4 mb-8">
+        <div class="space-y-2">
           <h1 class="text-2xl font-semibold">Notifiers</h1>
 
-          <p class="text-sm">
-            <strong class="text-primary">
-              Set up the rules for the memecoin calls you want to receive from DEX Screener.
-              <br />
-              Choose the chain, Telegram destination, forbidden terms, and metric thresholds.
-            </strong>
-          </p>
+          <ul class="list-disc list-inside space-y-1 text-sm font-semibold text-primary">
+            <li>Set up the rules for the memecoin calls you want to receive from DEX Screener.</li>
+            <li>Choose the chain, Telegram destination, forbidden terms, and metric thresholds.</li>
+          </ul>
         </div>
-         <.link navigate={~p"/notifiers/new"} class="btn btn-primary btn-sm">New notifier</.link>
+        <.link navigate={~p"/notifiers/new"} class="btn btn-primary btn-sm">New notifier</.link>
       </div>
 
-      <p :if={@notifiers == []} class="opacity-70">
+      <p :if={@notifiers == []} class="opacity-70 mt-2">
         No notifiers yet. Create one to start receiving calls on Telegram.
       </p>
 
@@ -58,7 +55,7 @@ defmodule MemePingWeb.NotifiersLive do
             <td>
               <span class={[
                 "badge",
-                notifier.enabled && "badge-success",
+                notifier.enabled && "badge-accent text-white",
                 !notifier.enabled && "badge-ghost"
               ]}>
                 {if notifier.enabled, do: "enabled", else: "disabled"}
@@ -87,7 +84,7 @@ defmodule MemePingWeb.NotifiersLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user} active_tab={:notifiers}>
-      <h1 class="text-2xl font-semibold mb-4">
+      <h1 class="text-2xl font-semibold mb-8">
         {if @live_action == :new, do: "New notifier", else: "Edit notifier"}
       </h1>
 
@@ -223,10 +220,7 @@ defmodule MemePingWeb.NotifiersLive do
   defp save_notifier(socket, :new, params) do
     case Notifications.create_notifier(socket.assigns.current_user, params) do
       {:ok, _notifier} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Notifier created")
-         |> push_navigate(to: ~p"/notifiers")}
+        {:noreply, push_navigate(socket, to: ~p"/notifiers")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
@@ -236,10 +230,7 @@ defmodule MemePingWeb.NotifiersLive do
   defp save_notifier(socket, :edit, params) do
     case Notifications.update_notifier(socket.assigns.notifier, params) do
       {:ok, _notifier} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Notifier updated")
-         |> push_navigate(to: ~p"/notifiers")}
+        {:noreply, push_navigate(socket, to: ~p"/notifiers")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}

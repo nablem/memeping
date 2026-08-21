@@ -6,27 +6,20 @@ defmodule MemePingWeb.TelegramChannelsLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user} active_tab={:telegram_channels}>
-      <div class="flex items-center justify-between mb-4">
-        <div>
+      <div class="flex items-center justify-between gap-4 mb-8">
+        <div class="space-y-2">
           <h1 class="text-2xl font-semibold">Telegram channels</h1>
 
-          <p class="text-sm">
-            <strong class="text-primary">
-              Create a Telegram channel where you want to receive your notifications, then add
-              its name and chat ID here.
-              <br />
-              Add the bot <strong>@memeping_bot</strong> (MemePing Bot) to your channel as an
-              administrator with permission to post messages.
-              <br />
-              You can link the saved channel to one or more notifiers
-              so matching memecoin calls are sent to that destination.
-            </strong>
-          </p>
+          <ul class="list-disc list-inside space-y-1 text-sm font-semibold text-primary">
+            <li>Create a Telegram channel, then add its name and chat ID here.</li>
+            <li>Add <strong>@memeping_bot</strong> as an admin with permission to post messages.</li>
+            <li>Link the channel to one or more notifiers to route matching calls there.</li>
+          </ul>
         </div>
         <button phx-click="new" class="btn btn-primary btn-sm">Add channel</button>
       </div>
 
-      <div :if={@show_form} class="border border-base-300 p-5 mb-6">
+      <div :if={@show_form} class="border border-base-300 p-5 mb-8">
         <h2 class="text-lg font-semibold mb-4">
           {if @editing, do: "Edit channel", else: "Add channel"}
         </h2>
@@ -63,7 +56,7 @@ defmodule MemePingWeb.TelegramChannelsLive do
         </.form>
       </div>
 
-      <p :if={@channels == []} class="opacity-70">No Telegram channels saved yet.</p>
+      <p :if={@channels == []} class="opacity-70 mt-2">No Telegram channels saved yet.</p>
 
       <div :if={@channels != []} id="telegram-channels" class="grid gap-3 sm:grid-cols-2">
         <article
@@ -80,9 +73,9 @@ defmodule MemePingWeb.TelegramChannelsLive do
               id={"test-telegram-channel-#{channel.id}"}
               phx-click="test"
               phx-value-id={channel.id}
-              class="btn btn-primary btn-xs"
+              class="btn btn-secondary btn-xs"
             >
-              Send test message
+              Test message
             </button>
             <button phx-click="edit" phx-value-id={channel.id} class="btn btn-ghost btn-xs">
               Edit
@@ -149,8 +142,7 @@ defmodule MemePingWeb.TelegramChannelsLive do
         {:noreply,
          socket
          |> load_channels()
-         |> assign(:show_form, false)
-         |> put_flash(:info, "Telegram channel saved")}
+         |> assign(:show_form, false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
