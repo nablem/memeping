@@ -44,8 +44,7 @@ defmodule MemePingWeb.Layouts do
         <div class="navbar bg-base-100 border-b border-base-300 lg:hidden">
           <label for="app-drawer" class="btn btn-square btn-ghost" aria-label="Open menu">
             <.icon name="hero-bars-3" class="size-5" />
-          </label>
-          <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
+          </label> <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
         </div>
 
         <main class="flex-1 px-4 py-8 sm:px-6 lg:px-10">
@@ -70,6 +69,9 @@ defmodule MemePingWeb.Layouts do
             <a href="/term-lists" class={nav_link_class(@active_tab == :term_lists)}>
               <.icon name="hero-shield-exclamation" class="size-5" /> Forbidden terms
             </a>
+            <a href="/plans" class={nav_link_class(@active_tab == :plans)}>
+              <.icon name="hero-sparkles" class="size-5" /> Plans
+            </a>
           </nav>
 
           <div class="px-3 py-4 border-t border-base-300 space-y-2">
@@ -92,7 +94,7 @@ defmodule MemePingWeb.Layouts do
         </aside>
       </div>
     </div>
-    <.flash_group flash={@flash} />
+     <.flash_group flash={@flash} />
     """
   end
 

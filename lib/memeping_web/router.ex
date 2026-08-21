@@ -50,6 +50,7 @@ defmodule MemePingWeb.Router do
       live "/term-lists", TermListsLive, :index
       live "/term-lists/new", TermListsLive, :new
       live "/term-lists/:id/edit", TermListsLive, :edit
+      live "/plans", PlansLive, :index
     end
   end
 

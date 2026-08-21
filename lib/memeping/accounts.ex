@@ -136,4 +136,11 @@ defmodule MemePing.Accounts do
     |> where([w], w.user_id == ^id)
     |> Repo.all()
   end
+
+  @spec update_plan(User.t(), String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def update_plan(%User{} = user, plan_id) do
+    user
+    |> User.plan_changeset(%{plan: plan_id})
+    |> Repo.update()
+  end
 end
