@@ -46,6 +46,26 @@ defmodule MemePing.Notifications.Worker do
 
   def via_tuple(id), do: {:via, Registry, {MemePing.Notifications.Registry, id}}
 
+  @doc "Datetime of this worker's next scheduled poll, or `nil` if it isn't running."
+  @spec next_poll_at(pos_integer()) :: NaiveDateTime.t() | nil
+  def next_poll_at(id) do
+    case Registry.lookup(MemePing.Notifications.Registry, id) do
+      [{pid, _}] -> GenServer.call(pid, :next_poll_at)
+      [] -> nil
+    end
+  end
+
+  @doc "Runs a delivery pass right now instead of waiting for the next scheduled poll."
+  @spec force_poll(pos_integer()) ::
+          {:ok, %{matched: non_neg_integer(), sent: non_neg_integer(), failed: non_neg_integer()}}
+          | {:error, :not_running}
+  def force_poll(id) do
+    case Registry.lookup(MemePing.Notifications.Registry, id) do
+      [{pid, _}] -> GenServer.call(pid, :force_poll)
+      [] -> {:error, :not_running}
+    end
+  end
+
   @spec deliver_notifications(Notifier.t(), NaiveDateTime.t()) ::
           {:ok, %{matched: non_neg_integer(), sent: non_neg_integer(), failed: non_neg_integer()}}
   def deliver_notifications(notifier, now \\ current_time())
@@ -88,30 +108,43 @@ defmodule MemePing.Notifications.Worker do
 
   @impl true
   def init(%Notifier{id: id}) do
-    schedule_poll(@poll_interval)
-    {:ok, id}
+    {:ok, %{id: id, next_poll_at: schedule_poll(@poll_interval)}}
   end
 
   @impl true
-  def handle_info(:poll, id) do
+  def handle_call(:next_poll_at, _from, state) do
+    {:reply, state.next_poll_at, state}
+  end
+
+  @impl true
+  def handle_call(:force_poll, _from, state) do
+    {:reply, run_poll(state.id), state}
+  end
+
+  @impl true
+  def handle_info(:poll, state) do
+    run_poll(state.id)
+    {:noreply, %{state | next_poll_at: schedule_poll(@poll_interval)}}
+  end
+
+  defp run_poll(id) do
     case Notifications.get_enabled_notifier(id) do
       nil ->
-        :ok
+        {:ok, %{matched: 0, sent: 0, failed: 0}}
 
       notifier ->
         case deliver_notifications(notifier) do
-          {:ok, %{matched: matched, sent: sent, failed: failed}} when matched > 0 ->
+          {:ok, %{matched: matched, sent: sent, failed: failed}} = result when matched > 0 ->
             Logger.info(
               "[Notifiers] #{notifier.id} evaluated #{matched} tokens, sent #{sent}, failed #{failed}"
             )
 
-          {:ok, _result} ->
-            :ok
+            result
+
+          {:ok, _result} = result ->
+            result
         end
     end
-
-    schedule_poll(@poll_interval)
-    {:noreply, id}
   end
 
   defp deliver_token(notifier, token, now) do
@@ -162,7 +195,10 @@ defmodule MemePing.Notifications.Worker do
     end
   end
 
-  defp schedule_poll(interval), do: Process.send_after(self(), :poll, interval)
+  defp schedule_poll(interval) do
+    Process.send_after(self(), :poll, interval)
+    NaiveDateTime.add(current_time(), div(interval, 1_000), :second)
+  end
 
   defp current_time, do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 end

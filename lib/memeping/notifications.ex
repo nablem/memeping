@@ -1,9 +1,8 @@
 defmodule MemePing.Notifications do
   @moduledoc """
-  CRUD for a user's notifiers (Telegram destination + match criteria).
-
-  This is UI/data-capture only for now: nothing here polls DEX Screener or sends
-  Telegram messages yet.
+  CRUD for a user's notifiers (Telegram destination + match criteria), plus
+  the matching/delivery pipeline (`Worker`/`Manager`) that sends unseen
+  matching tokens over Telegram.
   """
 
   import Ecto.Query
@@ -12,6 +11,7 @@ defmodule MemePing.Notifications do
   alias MemePing.Notifications.Criteria
   alias MemePing.Notifications.Notifier
   alias MemePing.Notifications.TermList
+  alias MemePing.Notifications.Worker
   alias MemePing.Repo
 
   @spec list_notifiers(User.t()) :: [Notifier.t()]
@@ -121,4 +121,93 @@ defmodule MemePing.Notifications do
       not TermList.match?(notifier.term_list, Map.get(token, :name)) and
       not TermList.match?(notifier.term_list, Map.get(token, :ticker))
   end
+
+  @doc """
+  Prints, for every notifier whose name contains `name` (case-insensitive),
+  the tokens currently due to be sent on its next round, with metrics, plus
+  when that next round is scheduled.
+
+  For a quick eyeball check from `iex -S mix phx.server`:
+
+      iex> MemePing.Notifications.recap("Solana calls")
+  """
+  @spec recap(String.t()) :: :ok
+  def recap(name) do
+    case find_notifiers_by_name(name) do
+      [] -> IO.puts("No notifier matching #{inspect(name)}.")
+      notifiers -> Enum.each(notifiers, &print_notifier_recap/1)
+    end
+  end
+
+  @doc """
+  Forces an immediate delivery pass for every notifier whose name contains
+  `name` (case-insensitive), instead of waiting for its next scheduled round.
+  Requires the notifier's worker to actually be running (`start_notifiers`
+  enabled, notifier enabled + linked to a Telegram channel).
+
+      iex> MemePing.Notifications.force_poll("Solana calls")
+  """
+  @spec force_poll(String.t()) :: :ok
+  def force_poll(name) do
+    case find_notifiers_by_name(name) do
+      [] ->
+        IO.puts("No notifier matching #{inspect(name)}.")
+
+      notifiers ->
+        Enum.each(notifiers, fn notifier ->
+          case Worker.force_poll(notifier.id) do
+            {:ok, result} ->
+              IO.puts("#{notifier.name} (##{notifier.id}): #{inspect(result)}")
+
+            {:error, :not_running} ->
+              IO.puts("#{notifier.name} (##{notifier.id}): worker not running, skipped.")
+          end
+        end)
+    end
+  end
+
+  defp find_notifiers_by_name(name) do
+    Notifier
+    |> where([n], like(fragment("lower(?)", n.name), fragment("lower(?)", ^"%#{name}%")))
+    |> preload([:telegram_channel_record, :term_list])
+    |> order_by([n], asc: n.name)
+    |> Repo.all()
+  end
+
+  defp print_notifier_recap(notifier) do
+    next_round =
+      case Worker.next_poll_at(notifier.id) do
+        nil -> "not running"
+        datetime -> to_string(datetime)
+      end
+
+    IO.puts(
+      "== #{notifier.name} (##{notifier.id}, #{notifier.chain}, " <>
+        "#{if notifier.enabled, do: "enabled", else: "disabled"}) — next round: #{next_round} =="
+    )
+
+    notifier
+    |> Worker.matching_tokens()
+    |> print_tokens()
+  end
+
+  defp print_tokens([]), do: IO.puts("  (no tokens currently due)")
+
+  defp print_tokens(tokens) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+    Enum.each(tokens, fn t ->
+      age = Criteria.age_in_hours(t, now)
+
+      IO.puts(
+        "  #{pad(t.token_address, 46)} #{pad(t.ticker || "-", 10)} " <>
+          "mcap=#{fmt(t.market_cap)} liq=#{fmt(t.liquidity)} vol1h=#{fmt(t.volume_1h)} " <>
+          "age_h=#{fmt(age)}"
+      )
+    end)
+  end
+
+  defp pad(value, len), do: String.pad_trailing(to_string(value), len)
+  defp fmt(nil), do: "-"
+  defp fmt(value), do: :erlang.float_to_binary(value * 1.0, decimals: 2)
 end

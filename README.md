@@ -122,3 +122,21 @@ becomes **per-user/per-notifier** and driven by rows in Postgres instead of a YA
 
 We'll tackle these incrementally, starting with #2 (UI + auth) once the repo/spec baseline
 is in place.
+
+## 6. Debugging helpers (`iex -S mix phx.server`)
+
+- `MemePing.Discovery.recap(limit \\ 20)` — prints the most recently touched tokens
+  (chain, address, ticker, `active`/`inactivity_reason`, market cap, liquidity, 1h volume,
+  last-checked/updated timestamps), most recent first.
+- `MemePing.Notifications.recap(name)` — for every notifier whose name contains `name`
+  (case-insensitive), prints the tokens currently due to be sent on its next round (with
+  metrics) and when that round is scheduled. A token that already has a row in
+  `notification_deliveries` for that notifier is permanently excluded here regardless of
+  criteria — that's the dedup ledger working as intended, not a criteria mismatch.
+- `MemePing.Notifications.force_poll(name)` — runs an immediate delivery pass for every
+  matching notifier instead of waiting for its next scheduled round (up to 60s); requires
+  the notifier's worker to actually be running (enabled + linked to a Telegram channel).
+- `MemePing.Repo.get_by(MemePing.Notifications.NotificationDelivery, token_address: "...")`
+  — check whether/when a specific token was already delivered to a notifier (add
+  `notifier_id: id` to scope it to one notifier); a non-nil result explains why that token
+  no longer shows up in `recap/1` no matter what the criteria are.

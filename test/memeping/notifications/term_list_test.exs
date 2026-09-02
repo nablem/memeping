@@ -24,4 +24,15 @@ defmodule MemePing.Notifications.TermListTest do
     term_list = %TermList{terms: "spam"}
     refute TermList.match?(term_list, nil)
   end
+
+  test "changeset strips blank lines and '#' comment lines from terms" do
+    changeset =
+      TermList.changeset(%TermList{}, %{
+        "name" => "Spam",
+        "user_id" => 1,
+        "terms" => "# Section header\n\nairdrop\n  # another comment\nrugpull\n"
+      })
+
+    assert Ecto.Changeset.get_change(changeset, :terms) == "airdrop\nrugpull"
+  end
 end

@@ -51,7 +51,7 @@ defmodule MemePing.Notifications.TermList do
     terms
     |> String.split(~r/\R/u)
     |> Enum.map(&String.trim/1)
-    |> Enum.reject(&(&1 == ""))
+    |> Enum.reject(&(&1 == "" or String.starts_with?(&1, "#")))
     |> Enum.join("\n")
   end
 
