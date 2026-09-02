@@ -7,6 +7,11 @@ defmodule MemePing.Notifications.Worker do
   Ported from `Bentley.Notifiers.Worker`, minus sniper-triggering and
   `depends_on_notifier_ids` (no MemePing equivalent). Poll interval and batch
   size are fixed constants for v1 rather than per-notifier settings.
+
+  Holds only the notifier's id as state and re-fetches it fresh from the DB on
+  every poll tick, so edits to the notifier row *or* to its linked term list /
+  Telegram channel take effect on the very next tick rather than requiring a
+  worker restart.
   """
   use GenServer
   require Logger
@@ -82,25 +87,31 @@ defmodule MemePing.Notifications.Worker do
   end
 
   @impl true
-  def init(%Notifier{} = notifier) do
+  def init(%Notifier{id: id}) do
     schedule_poll(@poll_interval)
-    {:ok, notifier}
+    {:ok, id}
   end
 
   @impl true
-  def handle_info(:poll, %Notifier{} = notifier) do
-    case deliver_notifications(notifier) do
-      {:ok, %{matched: matched, sent: sent, failed: failed}} when matched > 0 ->
-        Logger.info(
-          "[Notifiers] #{notifier.id} evaluated #{matched} tokens, sent #{sent}, failed #{failed}"
-        )
-
-      {:ok, _result} ->
+  def handle_info(:poll, id) do
+    case Notifications.get_enabled_notifier(id) do
+      nil ->
         :ok
+
+      notifier ->
+        case deliver_notifications(notifier) do
+          {:ok, %{matched: matched, sent: sent, failed: failed}} when matched > 0 ->
+            Logger.info(
+              "[Notifiers] #{notifier.id} evaluated #{matched} tokens, sent #{sent}, failed #{failed}"
+            )
+
+          {:ok, _result} ->
+            :ok
+        end
     end
 
     schedule_poll(@poll_interval)
-    {:noreply, notifier}
+    {:noreply, id}
   end
 
   defp deliver_token(notifier, token, now) do

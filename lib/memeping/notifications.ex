@@ -94,6 +94,23 @@ defmodule MemePing.Notifications do
   end
 
   @doc """
+  Fetches a notifier fresh from the DB (with its current criteria, term list,
+  and Telegram channel), or `nil` if it's gone/disabled.
+
+  Used by `Worker` on every poll tick instead of trusting its `init/1`
+  snapshot, so edits to the notifier itself *or* to its linked term list /
+  Telegram channel take effect on the very next tick, not just on the
+  reconcile triggered by editing the notifier row.
+  """
+  @spec get_enabled_notifier(pos_integer()) :: Notifier.t() | nil
+  def get_enabled_notifier(id) do
+    Notifier
+    |> where([n], n.id == ^id and n.enabled == true)
+    |> preload([:telegram_channel_record, :term_list])
+    |> Repo.one()
+  end
+
+  @doc """
   Whether `notifier` currently wants to be notified about `token`: every
   configured metric range matches, and neither the token's name nor ticker is
   flagged by the notifier's (optional) forbidden-terms list.

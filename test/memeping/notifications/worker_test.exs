@@ -154,4 +154,52 @@ defmodule MemePing.Notifications.WorkerTest do
       assert {:ok, %{matched: 0, sent: 0, failed: 0}} = Worker.deliver_notifications(notifier)
     end
   end
+
+  describe "a running worker process" do
+    setup %{notifier: notifier, channel: channel} do
+      {:ok, notifier} =
+        Notifications.update_notifier(notifier, %{"telegram_channel_id" => channel.id})
+
+      start_supervised!({Registry, keys: :unique, name: MemePing.Notifications.Registry})
+      pid = start_supervised!({Worker, notifier})
+      %{pid: pid}
+    end
+
+    test "picks up a term-list edit made after it started, without a restart", %{
+      user: user,
+      notifier: notifier,
+      pid: pid
+    } do
+      {:ok, term_list} =
+        TermLists.create_term_list(user, %{"name" => "Spam", "terms" => "killer"})
+
+      {:ok, _notifier} =
+        Notifications.update_notifier(notifier, %{"term_list_id" => term_list.id})
+
+      insert_token!(%{token_address: "AddrL"})
+
+      send(pid, :poll)
+      _ = :sys.get_state(pid)
+
+      refute Repo.get_by(NotificationDelivery, token_address: "AddrL")
+    end
+
+    test "picks up a Telegram channel edit made after it started, without a restart", %{
+      channel: channel,
+      notifier: notifier,
+      pid: pid
+    } do
+      {:ok, _channel} = Telegram.update_channel(channel, %{"chat_id" => "-999999"})
+      insert_token!(%{token_address: "AddrM"})
+
+      send(pid, :poll)
+      _ = :sys.get_state(pid)
+
+      assert %{telegram_channel: "-999999"} =
+               Repo.get_by(NotificationDelivery, token_address: "AddrM")
+
+      # sanity check: the notifier row itself was untouched by this test.
+      refute Notifications.get_enabled_notifier(notifier.id) == nil
+    end
+  end
 end
