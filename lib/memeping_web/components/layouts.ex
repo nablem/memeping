@@ -44,14 +44,15 @@ defmodule MemePingWeb.Layouts do
         <div class="navbar bg-base-100 border-b border-base-300 lg:hidden">
           <label for="app-drawer" class="btn btn-square btn-ghost" aria-label="Open menu">
             <.icon name="hero-bars-3" class="size-5" />
-          </label> <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
+          </label>
+           <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
         </div>
-        
+
         <main class="flex-1 px-4 py-8 sm:px-6 lg:px-10">
           <div class="mx-auto max-w-4xl space-y-4">{render_slot(@inner_block)}</div>
         </main>
       </div>
-      
+
       <div class="drawer-side z-20">
         <label for="app-drawer" aria-label="Close menu" class="drawer-overlay"></label>
         <aside class="min-h-full w-64 bg-base-200 border-r border-base-300 flex flex-col">
@@ -73,7 +74,7 @@ defmodule MemePingWeb.Layouts do
               <.icon name="hero-sparkles" class="size-5" /> Plans
             </a>
           </nav>
-          
+
           <div class="px-3 py-4 border-t border-base-300 space-y-2">
             <p
               :if={@current_user && Enum.at(@current_user.wallet_identities, 0)}
@@ -81,7 +82,7 @@ defmodule MemePingWeb.Layouts do
             >
               {Enum.at(@current_user.wallet_identities, 0).address}
             </p>
-            
+
             <.link
               :if={@current_user}
               href="/logout"
@@ -94,7 +95,7 @@ defmodule MemePingWeb.Layouts do
         </aside>
       </div>
     </div>
-     <.flash_group flash={@flash} />
+    <.flash_group flash={@flash} />
     """
   end
 
@@ -131,7 +132,7 @@ defmodule MemePingWeb.Layouts do
         {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
-      
+
       <.flash
         id="server-error"
         kind={:error}

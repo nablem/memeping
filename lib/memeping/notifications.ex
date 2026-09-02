@@ -11,6 +11,7 @@ defmodule MemePing.Notifications do
   alias MemePing.Accounts.User
   alias MemePing.Notifications.Criteria
   alias MemePing.Notifications.Notifier
+  alias MemePing.Notifications.TermList
   alias MemePing.Repo
 
   @spec list_notifiers(User.t()) :: [Notifier.t()]
@@ -43,6 +44,7 @@ defmodule MemePing.Notifications do
     %Notifier{}
     |> Notifier.changeset(Map.put(attrs, "user_id", user_id))
     |> Repo.insert()
+    |> reconcile_notifiers()
   end
 
   @spec update_notifier(Notifier.t(), map()) :: {:ok, Notifier.t()} | {:error, Ecto.Changeset.t()}
@@ -50,10 +52,20 @@ defmodule MemePing.Notifications do
     notifier
     |> Notifier.changeset(attrs)
     |> Repo.update()
+    |> reconcile_notifiers()
   end
 
   @spec delete_notifier(Notifier.t()) :: {:ok, Notifier.t()} | {:error, Ecto.Changeset.t()}
-  def delete_notifier(%Notifier{} = notifier), do: Repo.delete(notifier)
+  def delete_notifier(%Notifier{} = notifier) do
+    notifier |> Repo.delete() |> reconcile_notifiers()
+  end
+
+  defp reconcile_notifiers({:ok, _notifier} = result) do
+    MemePing.Notifications.Manager.reconcile()
+    result
+  end
+
+  defp reconcile_notifiers(result), do: result
 
   @spec metrics() :: [{atom(), String.t()}]
   def metrics, do: Criteria.metrics()
@@ -71,5 +83,25 @@ defmodule MemePing.Notifications do
     |> select([n], n.chain)
     |> distinct(true)
     |> Repo.all()
+  end
+
+  @spec list_enabled_notifiers() :: [Notifier.t()]
+  def list_enabled_notifiers do
+    Notifier
+    |> where([n], n.enabled == true)
+    |> preload([:telegram_channel_record, :term_list])
+    |> Repo.all()
+  end
+
+  @doc """
+  Whether `notifier` currently wants to be notified about `token`: every
+  configured metric range matches, and neither the token's name nor ticker is
+  flagged by the notifier's (optional) forbidden-terms list.
+  """
+  @spec token_matches?(Notifier.t(), struct() | map(), NaiveDateTime.t()) :: boolean()
+  def token_matches?(%Notifier{} = notifier, token, now \\ NaiveDateTime.utc_now()) do
+    Criteria.match?(token, notifier.criteria || %Criteria{}, now) and
+      not TermList.match?(notifier.term_list, Map.get(token, :name)) and
+      not TermList.match?(notifier.term_list, Map.get(token, :ticker))
   end
 end

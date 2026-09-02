@@ -19,6 +19,15 @@ defmodule MemePing.Application do
       ] ++
         if(start_recorder?(), do: [MemePing.Discovery.Recorder], else: []) ++
         if(start_updater?(), do: [MemePing.Discovery.Updater], else: []) ++
+        if(start_notifiers?(),
+          do: [
+            {Registry, keys: :unique, name: MemePing.Notifications.Registry},
+            {DynamicSupervisor,
+             strategy: :one_for_one, name: MemePing.Notifications.DynamicSupervisor},
+            MemePing.Notifications.Manager
+          ],
+          else: []
+        ) ++
         [
           # Start to serve requests, typically the last entry
           MemePingWeb.Endpoint
@@ -32,6 +41,7 @@ defmodule MemePing.Application do
 
   defp start_recorder?, do: Application.get_env(:memeping, :start_recorder, true)
   defp start_updater?, do: Application.get_env(:memeping, :start_updater, true)
+  defp start_notifiers?, do: Application.get_env(:memeping, :start_notifiers, true)
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.

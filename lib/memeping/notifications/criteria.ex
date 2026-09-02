@@ -8,6 +8,8 @@ defmodule MemePing.Notifications.Criteria do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t :: %__MODULE__{}
+
   @metrics [
     {:age_hours, "Pair age (hours)"},
     {:market_cap, "Market cap ($)"},
@@ -33,6 +35,54 @@ defmodule MemePing.Notifications.Criteria do
 
   @spec metrics() :: [{atom(), String.t()}]
   def metrics, do: @metrics
+
+  @doc """
+  Whether `token`'s current metrics fall within every range set on `criteria`.
+
+  Unset (`nil`) min/max bounds are unconstrained; a metric with no matching
+  token value (`nil`) always fails. Ported from
+  `Bentley.Notifiers.Criteria.match?/3`.
+  """
+  @spec match?(struct() | map(), t(), NaiveDateTime.t()) :: boolean()
+  def match?(token, %__MODULE__{} = criteria, now \\ current_time()) do
+    Enum.all?(@metrics, fn {metric, _label} ->
+      min = Map.get(criteria, :"#{metric}_min")
+      max = Map.get(criteria, :"#{metric}_max")
+
+      if is_nil(min) and is_nil(max) do
+        true
+      else
+        token
+        |> metric_value(metric, now)
+        |> within_range?(min, max)
+      end
+    end)
+  end
+
+  @spec age_in_hours(struct() | map(), NaiveDateTime.t()) :: float() | nil
+  def age_in_hours(token, now \\ current_time()) do
+    case Map.get(token, :created_on_chain_at) do
+      %NaiveDateTime{} = created_on_chain_at ->
+        NaiveDateTime.diff(now, created_on_chain_at, :second) / 3_600
+
+      _ ->
+        nil
+    end
+  end
+
+  defp metric_value(token, :age_hours, now), do: age_in_hours(token, now)
+  defp metric_value(token, :boost, _now), do: Map.get(token, :boost) || 0
+  defp metric_value(token, metric, _now), do: Map.get(token, metric)
+
+  defp within_range?(nil, _min, _max), do: false
+
+  defp within_range?(value, min, max) when is_number(value) do
+    (is_nil(min) or value >= min) and (is_nil(max) or value <= max)
+  end
+
+  defp within_range?(_value, _min, _max), do: false
+
+  defp current_time, do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
   @doc false
   def changeset(criteria, attrs) do

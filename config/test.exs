@@ -2,7 +2,7 @@ import Config
 
 # Discovery pollers hit the real DEX Screener API and can't get a checked-out
 # sandbox DB connection outside of a test process, so keep them off here.
-config :memeping, start_recorder: false, start_updater: false
+config :memeping, start_recorder: false, start_updater: false, start_notifiers: false
 config :memeping, dex_screener_client: MemePing.Discovery.DexScreenerTestClient
 
 # Configure your database

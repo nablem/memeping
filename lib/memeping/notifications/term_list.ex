@@ -16,6 +16,26 @@ defmodule MemePing.Notifications.TermList do
     timestamps()
   end
 
+  @doc """
+  Whether any term in `term_list` (case-insensitive regex, one per line)
+  matches `value`. Used to exclude a token by name/ticker.
+  """
+  @spec match?(t() | nil, String.t() | nil) :: boolean()
+  def match?(term_list, value)
+
+  def match?(%__MODULE__{terms: terms}, value) when is_binary(terms) and is_binary(value) do
+    terms
+    |> String.split("\n", trim: true)
+    |> Enum.any?(fn term ->
+      case Regex.compile(term, "i") do
+        {:ok, regex} -> Regex.match?(regex, value)
+        {:error, _reason} -> false
+      end
+    end)
+  end
+
+  def match?(_term_list, _value), do: false
+
   @doc false
   def changeset(term_list, attrs) do
     term_list
