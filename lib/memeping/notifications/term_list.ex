@@ -35,22 +35,41 @@ defmodule MemePing.Notifications.TermList do
     |> Enum.join("\n")
   end
 
+  @max_term_length 100
+  @max_term_count 2000
+
   defp validate_terms(changeset) do
     case get_change(changeset, :terms) || get_field(changeset, :terms) do
       nil ->
         changeset
 
       terms ->
-        terms
-        |> String.split("\n", trim: true)
-        |> Enum.reduce(changeset, &validate_term(&2, &1))
+        lines = String.split(terms, "\n", trim: true)
+
+        changeset
+        |> validate_term_count(lines)
+        |> then(&Enum.reduce(lines, &1, fn term, acc -> validate_term(acc, term) end))
     end
   end
 
+  defp validate_term_count(changeset, lines) when length(lines) > @max_term_count do
+    add_error(changeset, :terms, "must not contain more than #{@max_term_count} expressions")
+  end
+
+  defp validate_term_count(changeset, _lines), do: changeset
+
   defp validate_term(changeset, term) do
-    case Regex.compile(term, "i") do
-      {:ok, _regex} -> changeset
-      {:error, _reason} -> add_error(changeset, :terms, "contains an invalid regex: #{term}")
+    if String.length(term) > @max_term_length do
+      add_error(
+        changeset,
+        :terms,
+        "contains an expression longer than #{@max_term_length} characters: #{term}"
+      )
+    else
+      case Regex.compile(term, "i") do
+        {:ok, _regex} -> changeset
+        {:error, _reason} -> add_error(changeset, :terms, "contains an invalid regex: #{term}")
+      end
     end
   end
 end
