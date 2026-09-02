@@ -55,7 +55,7 @@ defmodule MemePing.Notifications.TermList do
     |> Enum.join("\n")
   end
 
-  @max_term_length 100
+  @max_term_length 200
   @max_term_count 2000
 
   defp validate_terms(changeset) do

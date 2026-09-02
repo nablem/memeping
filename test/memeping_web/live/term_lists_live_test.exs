@@ -92,16 +92,16 @@ defmodule MemePingWeb.TermListsLiveTest do
     refute html =~ "term11"
   end
 
-  test "rejects an expression longer than 100 characters", %{conn: conn} do
+  test "rejects an expression longer than 200 characters", %{conn: conn} do
     {:ok, editor, _html} = live(conn, ~p"/term-lists/new")
 
-    long_term = String.duplicate("a", 101)
+    long_term = String.duplicate("a", 201)
 
     editor
     |> form("#term-list-form", term_list: %{"name" => "Too long", "terms" => long_term})
     |> render_submit()
 
-    assert has_element?(editor, "#term-list-form p.text-error", "longer than 100 characters")
+    assert has_element?(editor, "#term-list-form p.text-error", "longer than 200 characters")
   end
 
   test "rejects more than 2000 expressions", %{conn: conn} do
