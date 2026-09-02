@@ -57,4 +57,19 @@ defmodule MemePing.Notifications do
 
   @spec metrics() :: [{atom(), String.t()}]
   def metrics, do: Criteria.metrics()
+
+  @doc """
+  Chains at least one enabled notifier currently cares about.
+
+  Queried live (no caching) so the Discovery pipeline picks up notifier
+  creation/removal on its very next tick.
+  """
+  @spec active_chains() :: [String.t()]
+  def active_chains do
+    Notifier
+    |> where([n], n.enabled == true)
+    |> select([n], n.chain)
+    |> distinct(true)
+    |> Repo.all()
+  end
 end

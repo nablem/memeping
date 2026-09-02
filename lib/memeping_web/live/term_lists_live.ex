@@ -9,20 +9,20 @@ defmodule MemePingWeb.TermListsLive do
       <div class="flex items-center justify-between gap-4 mb-8">
         <div class="space-y-2">
           <h1 class="text-2xl font-semibold">Lists of forbidden terms</h1>
-
+          
           <ul class="list-disc list-inside space-y-1 text-sm font-semibold text-primary">
             <li>
               Link a list to a notifier to exclude memecoins whose names match any of its case-insensitive regex patterns.
             </li>
-
+            
             <li>Matching is applied to the name only, not the ticker or description.</li>
           </ul>
         </div>
          <.link navigate={~p"/term-lists/new"} class="btn btn-primary btn-sm">New term list</.link>
       </div>
-
+      
       <p :if={@term_lists == []} class="opacity-70 mt-2">No forbidden term lists yet.</p>
-
+      
       <div :if={@term_lists != []} class="grid gap-3 sm:grid-cols-2">
         <article
           :for={term_list <- @term_lists}
@@ -32,7 +32,7 @@ defmodule MemePingWeb.TermListsLive do
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="font-semibold">{term_list.name}</h2>
-
+              
               <p class="text-sm opacity-70">{term_count(term_list.terms)} regexes</p>
             </div>
           </div>
@@ -62,11 +62,11 @@ defmodule MemePingWeb.TermListsLive do
       <h1 class="text-2xl font-semibold mb-2">
         {if @live_action == :new, do: "New forbidden term list", else: "Edit forbidden term list"}
       </h1>
-
+      
       <p class="text-sm opacity-70 mb-8">
         Enter one regular expression per line. Matching will be case-insensitive and limited to the memecoin name.
       </p>
-
+      
       <.form for={@form} id="term-list-form" phx-change="validate" phx-submit="save" class="space-y-5">
         <.input
           field={@form[:name]}
@@ -79,7 +79,7 @@ defmodule MemePingWeb.TermListsLive do
           field={@form[:terms]}
           type="textarea"
           label="Forbidden regexes"
-          placeholder={"^elon.*musk$\n.*rug\\s*pull.*\n\\bfree\\s+airdrop\\b\ntest\\d{2,}coin\n.*(scam|fake).*"}
+          placeholder="^elon.*musk$\n.*rug\\s*pull.*\n\\bfree\\s+airdrop\\b\ntest\\d{2,}coin\n.*(scam|fake).*"
           rows="12"
         />
         <div class="flex gap-2">

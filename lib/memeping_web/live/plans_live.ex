@@ -9,14 +9,14 @@ defmodule MemePingWeb.PlansLive do
     <Layouts.app flash={@flash} current_user={@current_user} active_tab={:plans}>
       <div class="mb-8 space-y-2">
         <h1 class="text-2xl font-semibold">Plans</h1>
-
+        
         <p class="text-sm">
           <strong class="text-primary">
             Payment is not wired up yet — pick a plan to switch to it instantly.
           </strong>
         </p>
       </div>
-
+      
       <div class="grid gap-4 sm:grid-cols-3">
         <div
           :for={plan <- Plan.all()}
@@ -29,27 +29,27 @@ defmodule MemePingWeb.PlansLive do
           <div>
             <div class="flex items-center gap-2">
               <h2 class="text-lg font-semibold">{plan.name}</h2>
-
+              
               <span :if={plan.id == @current_user.plan} class="badge badge-accent text-white">
                 Current plan
               </span>
             </div>
-
+            
             <p class="text-2xl font-semibold mt-2">{price_label(plan)}</p>
-
+            
             <p class="text-xs opacity-70">
               {if plan.duration_days, do: "prepaid, no auto-renewal", else: "\u00A0"}
             </p>
           </div>
-
+          
           <ul class="text-sm space-y-1 flex-1">
             <li>{limit_label(plan.notifier_limit, "notifier")}</li>
-
+            
             <li>{limit_label(plan.telegram_channel_limit, "Telegram channel")}</li>
-
+            
             <li>{term_list_limit_label(plan.term_list_limit)}</li>
           </ul>
-
+          
           <button
             phx-click="select"
             phx-value-plan={plan.id}
