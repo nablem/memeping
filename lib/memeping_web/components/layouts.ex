@@ -48,7 +48,7 @@ defmodule MemePingWeb.Layouts do
           <span class="font-cursive text-xl text-primary ml-2">MemePing</span>
         </div>
 
-        <main class="flex-1 px-4 py-8 sm:px-6 lg:px-10">
+        <main class="flex-1 px-4 pt-15 pb-8 sm:px-6 lg:px-10">
           <div class="mx-auto max-w-4xl space-y-4">{render_slot(@inner_block)}</div>
         </main>
 
@@ -65,7 +65,7 @@ defmodule MemePingWeb.Layouts do
             <img src={~p"/images/logo.png"} width="32" class="rounded-lg" />
             <span class="font-cursive text-2xl text-primary">MemePing</span>
           </a>
-          <nav :if={@current_user} class="flex-1 px-3 space-y-1">
+          <nav :if={@current_user} class="flex-1 px-3 pt-10 space-y-3">
             <a href="/hall-of-fame" class={nav_link_class(@active_tab == :hall_of_fame)}>
               <.icon name="hero-trophy" class="size-5" /> Hall of Fame
             </a>
