@@ -43,6 +43,7 @@ defmodule MemePingWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{MemePingWeb.UserAuth, :ensure_authenticated}] do
+      live "/hall-of-fame", HallOfFameLive, :index
       live "/notifiers", NotifiersLive, :index
       live "/notifiers/new", NotifiersLive, :new
       live "/notifiers/:id/edit", NotifiersLive, :edit

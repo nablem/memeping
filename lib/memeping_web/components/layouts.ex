@@ -61,6 +61,9 @@ defmodule MemePingWeb.Layouts do
             <span class="font-cursive text-2xl text-primary">MemePing</span>
           </a>
           <nav :if={@current_user} class="flex-1 px-3 space-y-1">
+            <a href="/hall-of-fame" class={nav_link_class(@active_tab == :hall_of_fame)}>
+              <.icon name="hero-trophy" class="size-5" /> Hall of Fame
+            </a>
             <a href="/notifiers" class={nav_link_class(@active_tab == :notifiers)}>
               <.icon name="hero-bell" class="size-5" /> Notifiers
             </a>
