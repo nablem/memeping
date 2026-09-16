@@ -137,10 +137,36 @@ defmodule MemePing.Accounts do
     |> Repo.all()
   end
 
-  @spec update_plan(User.t(), String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  @doc """
+  Whether the user owns the optional configured EVM admin address.
+
+  When no `ADMIN_ADDRESS` environment variable is configured, no user can
+  switch plans until billing is implemented.
+  """
+  @spec admin?(User.t()) :: boolean()
+  def admin?(%User{id: user_id}) do
+    case Application.get_env(:memeping, :admin_address) do
+      admin_address when is_binary(admin_address) and admin_address != "" ->
+        WalletIdentity
+        |> where([identity], identity.user_id == ^user_id and identity.chain == "evm")
+        |> select([identity], identity.address)
+        |> Repo.all()
+        |> Enum.any?(&(String.downcase(&1) == String.downcase(admin_address)))
+
+      _ ->
+        false
+    end
+  end
+
+  @spec update_plan(User.t(), String.t()) ::
+          {:ok, User.t()} | {:error, Ecto.Changeset.t() | :unauthorized}
   def update_plan(%User{} = user, plan_id) do
-    user
-    |> User.plan_changeset(%{plan: plan_id})
-    |> Repo.update()
+    if admin?(user) do
+      user
+      |> User.plan_changeset(%{plan: plan_id})
+      |> Repo.update()
+    else
+      {:error, :unauthorized}
+    end
   end
 end

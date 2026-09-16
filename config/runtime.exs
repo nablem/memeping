@@ -25,6 +25,10 @@ config :memeping, MemePingWeb.Endpoint,
 
 config :memeping, :telegram_bot_token, System.get_env("TELEGRAM_BOT_TOKEN")
 
+config :memeping,
+       :admin_address,
+       System.get_env("ADMIN_ADDRESS") || System.get_env("admin_address")
+
 if config_env() == :prod do
   database_path =
     System.get_env("DATABASE_PATH") ||

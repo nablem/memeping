@@ -152,7 +152,15 @@ or consecutive minutes near 1,200 released requests. Move to PostgreSQL plus a d
 (such as Oban), including Telegram `429` retry-after handling, before running multiple app nodes,
 requiring durable retry guarantees, or sustaining high-volume delivery backlogs.
 
-## 7. Debugging helpers (`iex -S mix phx.server`)
+## 7. Admin plan switching
+
+Set the optional `ADMIN_ADDRESS` environment variable to the EVM/MetaMask address of the app
+administrator. The user whose linked EVM wallet identity matches this address can switch freely
+between plans while payment is not implemented. All other users' plan-selection events leave their
+current plan unchanged. `admin_address` is also accepted for compatibility on platforms with
+case-sensitive environment variable names.
+
+## 8. Debugging helpers (`iex -S mix phx.server`)
 
 - `MemePing.Discovery.recap(limit \\ 20)` — prints the most recently touched tokens
   (chain, address, ticker, `active`/`inactivity_reason`, market cap, liquidity, 1h volume,

@@ -40,7 +40,7 @@ defmodule MemePing.Accounts.Plan do
       name: "Max",
       price_cents: 3900,
       duration_days: 30,
-      notifier_limit: nil,
+      notifier_limit: 30,
       telegram_channel_limit: nil,
       term_list_limit: nil
     }

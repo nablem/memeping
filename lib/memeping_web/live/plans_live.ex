@@ -9,12 +9,6 @@ defmodule MemePingWeb.PlansLive do
     <Layouts.app flash={@flash} current_user={@current_user} active_tab={:plans}>
       <div class="mb-8 space-y-2">
         <h1 class="text-2xl font-semibold">Plans</h1>
-
-        <p class="text-sm">
-          <strong class="text-primary">
-            Payment is not wired up yet — pick a plan to switch to it instantly.
-          </strong>
-        </p>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-3">
