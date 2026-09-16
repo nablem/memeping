@@ -138,9 +138,23 @@ defmodule MemePingWeb.NotifiersLive do
                 <tr :for={{metric, label} <- Notifications.metrics()}>
                   <td>{label}</td>
 
-                  <td><.input field={cf[:"#{metric}_min"]} type="number" step="1" /></td>
+                  <td>
+                    <.input
+                      field={cf[:"#{metric}_min"]}
+                      type="number"
+                      step="1"
+                      value={format_number(cf[:"#{metric}_min"].value)}
+                    />
+                  </td>
 
-                  <td><.input field={cf[:"#{metric}_max"]} type="number" step="1" /></td>
+                  <td>
+                    <.input
+                      field={cf[:"#{metric}_max"]}
+                      type="number"
+                      step="1"
+                      value={format_number(cf[:"#{metric}_max"].value)}
+                    />
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -175,6 +189,11 @@ defmodule MemePingWeb.NotifiersLive do
 
   defp term_list_name(%{term_list: %{name: name}}), do: name
   defp term_list_name(_notifier), do: "—"
+
+  defp format_number(value) when is_float(value),
+    do: :erlang.float_to_binary(value, [:compact, decimals: 15])
+
+  defp format_number(value), do: value
 
   def handle_params(%{"id" => id}, _uri, %{assigns: %{live_action: :edit}} = socket) do
     notifier = Notifications.get_notifier!(socket.assigns.current_user, id)

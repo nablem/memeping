@@ -75,6 +75,22 @@ defmodule MemePingWeb.NotifiersLiveTest do
     assert has_element?(second_live, "#notifier-form p.text-error", "has already been taken")
   end
 
+  test "renders large numeric criteria without exponential notation", %{conn: conn, user: user} do
+    {:ok, notifier} =
+      MemePing.Notifications.create_notifier(user, %{
+        "name" => "Large cap calls",
+        "chain" => "solana",
+        "criteria" => %{"market_cap_min" => "50000"}
+      })
+
+    {:ok, edit_live, _html} = live(conn, ~p"/notifiers/#{notifier}/edit")
+
+    assert has_element?(
+             edit_live,
+             "input[name='notifier[criteria][market_cap_min]'][value='50000.0']"
+           )
+  end
+
   test "rejects notifier names longer than 25 characters", %{conn: conn} do
     {:ok, live_view, _html} = live(conn, ~p"/notifiers/new")
 

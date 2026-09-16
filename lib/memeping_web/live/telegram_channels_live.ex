@@ -9,23 +9,23 @@ defmodule MemePingWeb.TelegramChannelsLive do
       <div class="flex items-center justify-between gap-4 mb-8">
         <div class="space-y-2">
           <h1 class="text-2xl font-semibold">Telegram channels</h1>
-
+          
           <ul class="list-disc list-inside space-y-1 text-sm font-semibold text-primary">
             <li>Create a Telegram channel, then add its name and chat ID here.</li>
-
+            
             <li>Add <strong>@memeping_bot</strong> as an admin with permission to post messages.</li>
-
+            
             <li>Link the channel to one or more notifiers to route matching calls there.</li>
           </ul>
         </div>
-        <button phx-click="new" class="btn btn-primary btn-sm">Add channel</button>
+         <button phx-click="new" class="btn btn-primary btn-sm">Add channel</button>
       </div>
-
+      
       <div :if={@show_form} class="border border-base-300 p-5 mb-8">
         <h2 class="text-lg font-semibold mb-4">
           {if @editing, do: "Edit channel", else: "Add channel"}
         </h2>
-
+        
         <.form
           for={@form}
           id="telegram-channel-form"
@@ -50,16 +50,16 @@ defmodule MemePingWeb.TelegramChannelsLive do
           <p class="text-sm opacity-70">
             Telegram connectivity and test messages will be added later.
           </p>
-
+          
           <div class="flex gap-2">
             <.button type="submit" phx-disable-with="Saving...">Save channel</.button>
             <button type="button" phx-click="cancel" class="btn btn-ghost">Cancel</button>
           </div>
         </.form>
       </div>
-
+      
       <p :if={@channels == []} class="opacity-70 mt-2">No Telegram channels saved yet.</p>
-
+      
       <div :if={@channels != []} id="telegram-channels" class="grid gap-3 sm:grid-cols-2">
         <article
           :for={channel <- @channels}
@@ -67,9 +67,9 @@ defmodule MemePingWeb.TelegramChannelsLive do
           class="border border-base-300 p-4"
         >
           <h2 class="font-semibold">{channel.name}</h2>
-
+          
           <p class="font-mono text-sm opacity-70 mt-1">{channel.chat_id}</p>
-
+          
           <div class="flex gap-2 mt-4">
             <button
               id={"test-telegram-channel-#{channel.id}"}
