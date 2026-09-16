@@ -51,6 +51,11 @@ defmodule MemePingWeb.Layouts do
         <main class="flex-1 px-4 py-8 sm:px-6 lg:px-10">
           <div class="mx-auto max-w-4xl space-y-4">{render_slot(@inner_block)}</div>
         </main>
+
+        <footer class="border-t border-base-300 px-4 py-4 text-center text-xs text-base-content/55">
+          <span :if={admin_name()}>Created with passion by {admin_name()} <span aria-hidden="true">·</span> </span>
+          Need help? <a href="mailto:contact@memeping.com" class="underline hover:text-base-content">contact@memeping.com</a>
+        </footer>
       </div>
 
       <div class="drawer-side z-20">
@@ -108,6 +113,13 @@ defmodule MemePingWeb.Layouts do
       active? && "bg-primary text-primary-content",
       !active? && "text-base-content/70 hover:bg-base-300 hover:text-base-content"
     ]
+  end
+
+  defp admin_name do
+    case Application.get_env(:memeping, :admin_name) do
+      name when is_binary(name) and name != "" -> name
+      _ -> nil
+    end
   end
 
   @doc """

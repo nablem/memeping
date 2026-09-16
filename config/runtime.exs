@@ -26,8 +26,7 @@ config :memeping, MemePingWeb.Endpoint,
 config :memeping, :telegram_bot_token, System.get_env("TELEGRAM_BOT_TOKEN")
 config :memeping, :base_rpc_url, System.get_env("BASE_RPC_URL", "https://mainnet.base.org")
 config :memeping, :treasury_address, System.get_env("TREASURY_ADDRESS")
-config :memeping, :base_rpc_url, System.get_env("BASE_RPC_URL", "https://mainnet.base.org")
-config :memeping, :treasury_address, System.get_env("TREASURY_ADDRESS")
+config :memeping, :admin_name, System.get_env("ADMIN_NAME")
 
 config :memeping,
        :admin_address,

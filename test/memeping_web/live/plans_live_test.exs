@@ -40,6 +40,26 @@ defmodule MemePingWeb.PlansLiveTest do
     assert Repo.get!(User, user.id).plan == "free"
   end
 
+  test "shows the optional admin attribution in the app footer", %{conn: conn} do
+    previous_name = Application.get_env(:memeping, :admin_name)
+    Application.put_env(:memeping, :admin_name, "Nabil")
+    on_exit(fn -> Application.put_env(:memeping, :admin_name, previous_name) end)
+
+    user = create_user_with_wallet!("0xother")
+    conn = Plug.Test.init_test_session(conn, %{"user_id" => user.id})
+    {:ok, view, _html} = live(conn, ~p"/plans")
+
+    assert has_element?(view, "footer", "Created with passion by Nabil")
+  end
+
+  test "shows the support contact in the app footer", %{conn: conn} do
+    user = create_user_with_wallet!("0xother")
+    conn = Plug.Test.init_test_session(conn, %{"user_id" => user.id})
+    {:ok, view, _html} = live(conn, ~p"/plans")
+
+    assert has_element?(view, "footer a[href='mailto:contact@memeping.com']", "contact@memeping.com")
+  end
+
   defp create_user_with_wallet!(address) do
     user = Repo.insert!(User.changeset(%User{}, %{}))
 
