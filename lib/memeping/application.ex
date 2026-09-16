@@ -15,7 +15,8 @@ defmodule MemePing.Application do
          repos: Application.fetch_env!(:memeping, :ecto_repos), skip: skip_migrations?()},
         {DNSCluster, query: Application.get_env(:memeping, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MemePing.PubSub},
-        MemePing.Discovery.RateLimiter
+        MemePing.Discovery.RateLimiter,
+        MemePing.Telegram.RateLimiter
       ] ++
         if(start_recorder?(), do: [MemePing.Discovery.Recorder], else: []) ++
         if(start_updater?(), do: [MemePing.Discovery.Updater], else: []) ++

@@ -123,7 +123,36 @@ becomes **per-user/per-notifier** and driven by rows in Postgres instead of a YA
 We'll tackle these incrementally, starting with #2 (UI + auth) once the repo/spec baseline
 is in place.
 
-## 6. Debugging helpers (`iex -S mix phx.server`)
+## 6. Telegram delivery and scaling (SQLite era)
+
+MemePing currently supports a single-node deployment backed by SQLite. Every enabled notifier
+has its own worker, which evaluates matching tokens once per minute (with up to 10 seconds of
+random scheduling jitter). A notifier sends at most **3** unseen token calls per round; remaining
+matches are still eligible on the next round and are sorted oldest-first.
+
+All Telegram API requests pass through one in-memory, process-local limiter. It starts at most
+**20 requests per second** (a theoretical maximum of 1,200 starts per minute), with the practical
+initial operating target set at **300-600 successful sends per minute**. Requests above that rate
+wait in the limiter's FIFO mailbox. This is intentionally not a durable job queue: a process
+restart drops waiting requests, but their tokens were not recorded as delivered and will be
+considered again on a later notifier poll.
+
+Monitor production logs for these entries:
+
+- `[Telegram Rate Limiter] Last minute: released 100 requests, peak queue 74, max wait 3800ms`
+  reports requests released to the Telegram client, the largest number of waiting requests, and
+  the longest total wait for a slot during that minute. A peak queue of 74 represents about 3.7
+  seconds of additional wait at the current 20 requests/second rate.
+- `[Telegram Rate Limiter] Request waited 5100ms for a send slot; 42 requests remain queued`
+  is emitted when an individual request waits at least 5 seconds.
+
+Queue depth consistently near zero and maximum waits below one second indicate comfortable
+capacity. Investigate sustained waits over 5 seconds, a queue that grows from minute to minute,
+or consecutive minutes near 1,200 released requests. Move to PostgreSQL plus a durable job queue
+(such as Oban), including Telegram `429` retry-after handling, before running multiple app nodes,
+requiring durable retry guarantees, or sustaining high-volume delivery backlogs.
+
+## 7. Debugging helpers (`iex -S mix phx.server`)
 
 - `MemePing.Discovery.recap(limit \\ 20)` — prints the most recently touched tokens
   (chain, address, ticker, `active`/`inactivity_reason`, market cap, liquidity, 1h volume,

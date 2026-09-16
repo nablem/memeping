@@ -10,6 +10,10 @@ defmodule MemePing.Notifications.WorkerTest do
   alias MemePing.Telegram
 
   setup do
+    if Process.whereis(MemePing.Telegram.RateLimiter) == nil do
+      start_supervised!({MemePing.Telegram.RateLimiter, interval_ms: 0})
+    end
+
     previous_client = Application.get_env(:memeping, :telegram_client)
     Application.put_env(:memeping, :telegram_client, MemePing.Telegram.TestClient)
     Application.put_env(:memeping, :telegram_test_result, :ok)
@@ -135,6 +139,18 @@ defmodule MemePing.Notifications.WorkerTest do
       assert {:ok, %{sent: 1}} = Worker.deliver_notifications(notifier)
       assert {:ok, %{matched: 0, sent: 0}} = Worker.deliver_notifications(notifier)
       assert Repo.aggregate(NotificationDelivery, :count) == 1
+    end
+
+    test "sends at most three matching tokens per run", %{notifier: notifier} do
+      for suffix <- ~w(One Two Three Four) do
+        insert_token!(%{token_address: "Addr#{suffix}"})
+      end
+
+      assert {:ok, %{matched: 3, sent: 3, failed: 0}} = Worker.deliver_notifications(notifier)
+      assert Repo.aggregate(NotificationDelivery, :count) == 3
+
+      assert {:ok, %{matched: 1, sent: 1, failed: 0}} = Worker.deliver_notifications(notifier)
+      assert Repo.aggregate(NotificationDelivery, :count) == 4
     end
 
     test "counts a Telegram failure without recording a delivery", %{notifier: notifier} do

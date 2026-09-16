@@ -26,9 +26,11 @@ defmodule MemePing.Notifications.Worker do
   alias MemePing.Notifications.Notifier
   alias MemePing.Repo
   alias MemePing.Telegram.Client
+  alias MemePing.Telegram.RateLimiter
 
   @poll_interval :timer.minutes(1)
-  @max_tokens_per_run 20
+  @poll_jitter_ms :timer.seconds(10)
+  @max_tokens_per_run 3
 
   def start_link(%Notifier{} = notifier) do
     GenServer.start_link(__MODULE__, notifier, name: via_tuple(notifier.id))
@@ -152,10 +154,12 @@ defmodule MemePing.Notifications.Worker do
     chat_id = notifier.telegram_channel_record.chat_id
 
     telegram_result =
-      case token.icon do
-        icon when is_binary(icon) -> Client.send_photo(chat_id, icon, message)
-        _ -> Client.send_message(chat_id, message)
-      end
+      RateLimiter.execute(fn ->
+        case token.icon do
+          icon when is_binary(icon) -> Client.send_photo(chat_id, icon, message)
+          _ -> Client.send_message(chat_id, message)
+        end
+      end)
 
     case telegram_result do
       :ok ->
@@ -196,8 +200,9 @@ defmodule MemePing.Notifications.Worker do
   end
 
   defp schedule_poll(interval) do
-    Process.send_after(self(), :poll, interval)
-    NaiveDateTime.add(current_time(), div(interval, 1_000), :second)
+    delay = interval + :rand.uniform(@poll_jitter_ms + 1) - 1
+    Process.send_after(self(), :poll, delay)
+    NaiveDateTime.add(current_time(), div(delay, 1_000), :second)
   end
 
   defp current_time, do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
