@@ -68,6 +68,7 @@ defmodule MemePing.MixProject do
       {:bandit, "~> 1.5"},
       {:ex_secp256k1, "~> 0.8"},
       {:ex_keccak, "~> 0.7.8"},
+      {:rustler, ">= 0.0.0", optional: true},
       {:b58, "~> 1.0"}
     ]
   end
