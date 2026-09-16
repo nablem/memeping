@@ -16,7 +16,8 @@ defmodule MemePing.Application do
         {DNSCluster, query: Application.get_env(:memeping, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: MemePing.PubSub},
         MemePing.Discovery.RateLimiter,
-        MemePing.Telegram.RateLimiter
+        MemePing.Telegram.RateLimiter,
+        MemePing.Billing.ExpiryWorker
       ] ++
         if(start_recorder?(), do: [MemePing.Discovery.Recorder], else: []) ++
         if(start_updater?(), do: [MemePing.Discovery.Updater], else: []) ++

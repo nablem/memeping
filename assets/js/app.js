@@ -25,11 +25,30 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/memeping"
 import topbar from "../vendor/topbar"
 
+const BasePayment = {
+  mounted() {
+    this.handleEvent("base_payment", async ({treasury, amount_usdc}) => {
+      try {
+        if (!window.ethereum) throw new Error("MetaMask or another EVM wallet is required.")
+        await window.ethereum.request({method: "wallet_switchEthereumChain", params: [{chainId: "0x2105"}]})
+        const [account] = await window.ethereum.request({method: "eth_requestAccounts"})
+        const recipient = treasury.slice(2).toLowerCase().padStart(64, "0")
+        const amount = (BigInt(amount_usdc) * 1000000n).toString(16).padStart(64, "0")
+        const data = "0xa9059cbb" + recipient + amount
+        const transaction_hash = await window.ethereum.request({method: "eth_sendTransaction", params: [{from: account, to: "0x833589fCD6EDB6E08f4c7C32D4f71b54bdA02913", data}]})
+        this.pushEvent("payment_submitted", {transaction_hash})
+      } catch (error) {
+        this.pushEvent("payment_failed", {message: error.message || "Payment was cancelled."})
+      }
+    })
+  },
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, BasePayment},
 })
 
 // Show progress bar on live navigation and form submits

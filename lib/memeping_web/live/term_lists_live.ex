@@ -4,17 +4,17 @@ defmodule MemePingWeb.TermListsLive do
   alias MemePing.Notifications.TermLists
 
   @terms_placeholder ~S"""
-^elon.*musk$
-presale|airdrop|giveaway
-rug\s*pull
-\bscam\b
-pepe.*moon
-^test\d+
-inu$
-^x{3,}
-^\d+$
-v[2-9]
-"""
+  ^elon.*musk$
+  presale|airdrop|giveaway
+  rug\s*pull
+  \bscam\b
+  pepe.*moon
+  ^test\d+
+  inu$
+  ^x{3,}
+  ^\d+$
+  v[2-9]
+  """
 
   def render(%{live_action: :index} = assigns) do
     ~H"""
@@ -109,10 +109,15 @@ v[2-9]
           <li>Exclude a name or ticker starting with "elon": <code>^elon</code></li>
           <li>Exclude a name or ticker ending with "inu": <code>inu$</code></li>
           <li>Exclude the exact name or ticker "test coin": <code>^test coin$</code></li>
-          <li>Exclude names containing "presale", "airdrop", or "giveaway": <code>presale|airdrop|giveaway</code></li>
+          <li>
+            Exclude names containing "presale", "airdrop", or "giveaway":
+            <code>presale|airdrop|giveaway</code>
+          </li>
           <li>Exclude names containing "rug pull" with optional spaces: <code>rug\s*pull</code></li>
           <li>Exclude names where "pepe" appears before "moon": <code>pepe.*moon</code></li>
-          <li>Exclude names or tickers starting with three or more "x" characters: <code>^x{3,}</code></li>
+          <li>
+            Exclude names or tickers starting with three or more "x" characters: <code>^x{3,}</code>
+          </li>
           <li>Exclude tickers made entirely of digits: <code>^\d+$</code></li>
           <li>Exclude the standalone years 2024 through 2029: <code>\b202[4-9]\b</code></li>
         </ul>

@@ -24,6 +24,10 @@ config :memeping, MemePingWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 config :memeping, :telegram_bot_token, System.get_env("TELEGRAM_BOT_TOKEN")
+config :memeping, :base_rpc_url, System.get_env("BASE_RPC_URL", "https://mainnet.base.org")
+config :memeping, :treasury_address, System.get_env("TREASURY_ADDRESS")
+config :memeping, :base_rpc_url, System.get_env("BASE_RPC_URL", "https://mainnet.base.org")
+config :memeping, :treasury_address, System.get_env("TREASURY_ADDRESS")
 
 config :memeping,
        :admin_address,
