@@ -7,6 +7,7 @@ defmodule MemePing.Notifications do
 
   import Ecto.Query
 
+  alias MemePing.Accounts
   alias MemePing.Accounts.User
   alias MemePing.Notifications.Criteria
   alias MemePing.Notifications.Notifier
@@ -40,11 +41,16 @@ defmodule MemePing.Notifications do
   end
 
   @spec create_notifier(User.t(), map()) :: {:ok, Notifier.t()} | {:error, Ecto.Changeset.t()}
-  def create_notifier(%User{id: user_id}, attrs) do
-    %Notifier{}
-    |> Notifier.changeset(Map.put(attrs, "user_id", user_id))
-    |> Repo.insert()
-    |> reconcile_notifiers()
+  def create_notifier(%User{id: user_id} = user, attrs) do
+    changeset = Notifier.changeset(%Notifier{}, Map.put(attrs, "user_id", user_id))
+
+    if limit_reached?(Notifier, user_id, Accounts.resource_limit(user, :notifier)) do
+      {:error, limit_error(changeset, "notifiers", Accounts.resource_limit(user, :notifier))}
+    else
+      changeset
+      |> Repo.insert()
+      |> reconcile_notifiers()
+    end
   end
 
   @spec update_notifier(Notifier.t(), map()) :: {:ok, Notifier.t()} | {:error, Ecto.Changeset.t()}
@@ -66,6 +72,18 @@ defmodule MemePing.Notifications do
   end
 
   defp reconcile_notifiers(result), do: result
+
+  defp limit_reached?(_schema, _user_id, nil), do: false
+
+  defp limit_reached?(schema, user_id, limit) do
+    Repo.aggregate(from(resource in schema, where: resource.user_id == ^user_id), :count) >= limit
+  end
+
+  defp limit_error(changeset, resource, limit) do
+    changeset
+    |> Ecto.Changeset.add_error(:name, "Your plan allows up to #{limit} #{resource}.")
+    |> Map.put(:action, :insert)
+  end
 
   @spec metrics() :: [{atom(), String.t()}]
   def metrics, do: Criteria.metrics()

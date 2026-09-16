@@ -5,6 +5,7 @@ defmodule MemePing.Accounts do
 
   import Ecto.Query
 
+  alias MemePing.Accounts.Plan
   alias MemePing.Accounts.User
   alias MemePing.Accounts.WalletIdentity
   alias MemePing.Accounts.Wallet
@@ -156,6 +157,15 @@ defmodule MemePing.Accounts do
       _ ->
         false
     end
+  end
+
+  @doc "Returns the user's configured plan limit for a managed resource."
+  @spec resource_limit(User.t(), :notifier | :telegram_channel | :term_list) ::
+          pos_integer() | nil
+  def resource_limit(%User{plan: plan_id}, resource) do
+    plan_id
+    |> Plan.get!()
+    |> Plan.resource_limit(resource)
   end
 
   @spec update_plan(User.t(), String.t()) ::

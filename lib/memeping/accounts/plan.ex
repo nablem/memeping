@@ -54,4 +54,9 @@ defmodule MemePing.Accounts.Plan do
 
   @spec get!(String.t()) :: t()
   def get!(id), do: Enum.find(@plans, &(&1.id == id)) || raise("unknown plan #{id}")
+
+  @spec resource_limit(t(), :notifier | :telegram_channel | :term_list) :: pos_integer() | nil
+  def resource_limit(plan, :notifier), do: plan.notifier_limit
+  def resource_limit(plan, :telegram_channel), do: plan.telegram_channel_limit
+  def resource_limit(plan, :term_list), do: plan.term_list_limit
 end

@@ -8,7 +8,7 @@ defmodule MemePingWeb.TermListsLiveTest do
   alias MemePing.Repo
 
   setup %{conn: conn} do
-    user = Repo.insert!(User.changeset(%User{}, %{}))
+    user = Repo.insert!(User.plan_changeset(%User{}, %{plan: "basic"}))
     conn = Plug.Test.init_test_session(conn, %{"user_id" => user.id})
     %{conn: conn, user: user}
   end
@@ -56,7 +56,11 @@ defmodule MemePingWeb.TermListsLiveTest do
     assert render(index_live) =~ "No forbidden term lists yet"
   end
 
-  test "rejects duplicate names and invalid regexes", %{conn: conn} do
+  test "rejects duplicate names and invalid regexes", %{conn: conn, user: user} do
+    user
+    |> User.plan_changeset(%{plan: "max"})
+    |> Repo.update!()
+
     {:ok, editor, _html} = live(conn, ~p"/term-lists/new")
 
     editor
@@ -76,6 +80,21 @@ defmodule MemePingWeb.TermListsLiveTest do
     |> render_submit()
 
     assert has_element?(second_editor, "#term-list-form p.text-error", "has already been taken")
+  end
+
+  test "shows an error when the forbidden term list limit is reached", %{conn: conn, user: user} do
+    {:ok, _} = TermLists.create_term_list(user, %{"name" => "One", "terms" => "spam"})
+    {:ok, live_view, _html} = live(conn, ~p"/term-lists/new")
+
+    live_view
+    |> form("#term-list-form", term_list: %{"name" => "Second", "terms" => "scam"})
+    |> render_submit()
+
+    assert has_element?(
+             live_view,
+             "#term-list-form p.text-error",
+             "Your plan allows up to 1 forbidden term lists."
+           )
   end
 
   test "previews only the first ten expressions", %{conn: conn, user: user} do

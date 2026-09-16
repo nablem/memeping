@@ -7,7 +7,7 @@ defmodule MemePingWeb.NotifiersLiveTest do
   alias MemePing.Repo
 
   setup %{conn: conn} do
-    user = Repo.insert!(User.changeset(%User{}, %{}))
+    user = Repo.insert!(User.plan_changeset(%User{}, %{plan: "basic"}))
     conn = Plug.Test.init_test_session(conn, %{"user_id" => user.id})
     %{conn: conn, user: user}
   end
@@ -73,6 +73,28 @@ defmodule MemePingWeb.NotifiersLiveTest do
     |> render_submit()
 
     assert has_element?(second_live, "#notifier-form p.text-error", "has already been taken")
+  end
+
+  test "shows an error when the notifier limit is reached", %{conn: conn, user: user} do
+    for number <- 1..3 do
+      {:ok, _} =
+        MemePing.Notifications.create_notifier(user, %{
+          "name" => "Notifier #{number}",
+          "chain" => "solana"
+        })
+    end
+
+    {:ok, live_view, _html} = live(conn, ~p"/notifiers/new")
+
+    live_view
+    |> form("#notifier-form", notifier: %{"name" => "Fourth notifier", "chain" => "solana"})
+    |> render_submit()
+
+    assert has_element?(
+             live_view,
+             "#notifier-form p.text-error",
+             "Your plan allows up to 3 notifiers."
+           )
   end
 
   test "renders large numeric criteria without exponential notation", %{conn: conn, user: user} do

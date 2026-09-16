@@ -7,6 +7,7 @@ defmodule MemePing.Telegram do
 
   import Ecto.Query
 
+  alias MemePing.Accounts
   alias MemePing.Accounts.User
   alias MemePing.Repo
   alias MemePing.Telegram.Channel
@@ -34,10 +35,19 @@ defmodule MemePing.Telegram do
   def change_channel(%Channel{} = channel, attrs \\ %{}), do: Channel.changeset(channel, attrs)
 
   @spec create_channel(User.t(), map()) :: {:ok, Channel.t()} | {:error, Ecto.Changeset.t()}
-  def create_channel(%User{id: user_id}, attrs) do
-    %Channel{}
-    |> Channel.changeset(Map.put(attrs, "user_id", user_id))
-    |> Repo.insert()
+  def create_channel(%User{id: user_id} = user, attrs) do
+    changeset = Channel.changeset(%Channel{}, Map.put(attrs, "user_id", user_id))
+
+    if limit_reached?(user_id, Accounts.resource_limit(user, :telegram_channel)) do
+      {:error,
+       limit_error(
+         changeset,
+         "Telegram channels",
+         Accounts.resource_limit(user, :telegram_channel)
+       )}
+    else
+      Repo.insert(changeset)
+    end
   end
 
   @spec update_channel(Channel.t(), map()) :: {:ok, Channel.t()} | {:error, Ecto.Changeset.t()}
@@ -49,6 +59,18 @@ defmodule MemePing.Telegram do
 
   @spec delete_channel(Channel.t()) :: {:ok, Channel.t()} | {:error, Ecto.Changeset.t()}
   def delete_channel(%Channel{} = channel), do: Repo.delete(channel)
+
+  defp limit_reached?(_user_id, nil), do: false
+
+  defp limit_reached?(user_id, limit) do
+    Repo.aggregate(from(channel in Channel, where: channel.user_id == ^user_id), :count) >= limit
+  end
+
+  defp limit_error(changeset, resource, limit) do
+    changeset
+    |> Ecto.Changeset.add_error(:name, "Your plan allows up to #{limit} #{resource}.")
+    |> Map.put(:action, :insert)
+  end
 
   @spec send_test_message(Channel.t()) :: :ok | {:error, term()}
   def send_test_message(%Channel{chat_id: chat_id, name: name}) do

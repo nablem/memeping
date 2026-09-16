@@ -23,7 +23,7 @@ defmodule MemePing.Notifications.WorkerTest do
       Application.delete_env(:memeping, :telegram_test_result)
     end)
 
-    user = Repo.insert!(User.changeset(%User{}, %{}))
+    user = Repo.insert!(User.plan_changeset(%User{}, %{plan: "basic"}))
     {:ok, channel} = Telegram.create_channel(user, %{"name" => "Main", "chat_id" => "-100123"})
 
     {:ok, notifier} =
