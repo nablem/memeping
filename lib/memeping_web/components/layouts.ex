@@ -53,8 +53,13 @@ defmodule MemePingWeb.Layouts do
         </main>
 
         <footer class="border-t border-base-300 px-4 py-4 text-center text-xs text-base-content/55">
-          <span :if={admin_name()}>Created with passion by {admin_name()} <span aria-hidden="true">·</span> </span>
-          Need help? <a href="mailto:contact@memeping.com" class="underline hover:text-base-content">contact@memeping.com</a>
+          <span :if={admin_name()}>
+            Created with passion by {admin_name()} <span aria-hidden="true">·</span>
+          </span>
+          Need help?
+          <a href="mailto:contact@memeping.com" class="underline hover:text-base-content">
+            contact@memeping.com
+          </a>
         </footer>
       </div>
 

@@ -36,6 +36,9 @@ defmodule MemePing.Discovery.Recorder do
         |> Enum.filter(fn p -> p["chainId"] in Notifier.chains() end)
         |> Enum.each(&process_token/1)
 
+      {:error, :rate_limited} ->
+        Logger.warning("[Recorder] DEX Screener rate limit reached (HTTP 429).")
+
       {:error, reason} ->
         Logger.error("[Recorder] API request failed: #{inspect(reason)}")
     end

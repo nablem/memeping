@@ -57,7 +57,11 @@ defmodule MemePingWeb.PlansLiveTest do
     conn = Plug.Test.init_test_session(conn, %{"user_id" => user.id})
     {:ok, view, _html} = live(conn, ~p"/plans")
 
-    assert has_element?(view, "footer a[href='mailto:contact@memeping.com']", "contact@memeping.com")
+    assert has_element?(
+             view,
+             "footer a[href='mailto:contact@memeping.com']",
+             "contact@memeping.com"
+           )
   end
 
   defp create_user_with_wallet!(address) do

@@ -201,6 +201,10 @@ defmodule MemePing.Discovery.Updater do
           end
         end)
 
+      {:ok, %{status: 429}} ->
+        Logger.warning("[Updater] DEX Screener rate limit reached (HTTP 429).")
+        [{:error, :rate_limited}]
+
       {:ok, response} ->
         Logger.error(
           "[Updater] Unexpected response for #{chain_id}/#{inspect(addresses)}: #{inspect(response)}"
