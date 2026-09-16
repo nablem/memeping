@@ -4,12 +4,16 @@ defmodule MemePingWeb.TermListsLive do
   alias MemePing.Notifications.TermLists
 
   @terms_placeholder ~S"""
-  ^elon.*musk$
-.*(?:presale|airdrop).*
-.*(?:rug|honeypot).*
-^test\d+.*
-.*(?:scam|fake|clone).*
-.*(?:official|support).*
+^elon.*musk$
+presale|airdrop|giveaway
+rug\s*pull
+\bscam\b
+pepe.*moon
+^test\d+
+inu$
+^x{3,}
+^\d+$
+v[2-9]
 """
 
   def render(%{live_action: :index} = assigns) do
@@ -73,7 +77,7 @@ defmodule MemePingWeb.TermListsLive do
       </h1>
 
       <p class="text-sm opacity-70 mb-8">
-        Enter one regular expression per line. Matching will be case-insensitive and limited to the memecoin name.
+        Enter one regular expression per line. Matching is case-insensitive and checks token names and tickers.
       </p>
 
       <.form for={@form} id="term-list-form" phx-change="validate" phx-submit="save" class="space-y-5">
@@ -96,6 +100,23 @@ defmodule MemePingWeb.TermListsLive do
           <.link navigate={~p"/term-lists"} class="btn btn-ghost">Cancel</.link>
         </div>
       </.form>
+
+      <section aria-labelledby="forbidden-term-examples" class="border-t border-base-300 pt-5">
+        <h2 id="forbidden-term-examples" class="text-sm font-semibold">Examples</h2>
+        <ul phx-no-curly-interpolation class="mt-2 space-y-1 text-sm text-base-content/70">
+          <li>Exclude a name or ticker containing "scam" anywhere: <code>scam</code></li>
+          <li>Exclude "scam" as a complete word in the middle of a name: <code>\bscam\b</code></li>
+          <li>Exclude a name or ticker starting with "elon": <code>^elon</code></li>
+          <li>Exclude a name or ticker ending with "inu": <code>inu$</code></li>
+          <li>Exclude the exact name or ticker "test coin": <code>^test coin$</code></li>
+          <li>Exclude names containing "presale", "airdrop", or "giveaway": <code>presale|airdrop|giveaway</code></li>
+          <li>Exclude names containing "rug pull" with optional spaces: <code>rug\s*pull</code></li>
+          <li>Exclude names where "pepe" appears before "moon": <code>pepe.*moon</code></li>
+          <li>Exclude names or tickers starting with three or more "x" characters: <code>^x{3,}</code></li>
+          <li>Exclude tickers made entirely of digits: <code>^\d+$</code></li>
+          <li>Exclude the standalone years 2024 through 2029: <code>\b202[4-9]\b</code></li>
+        </ul>
+      </section>
     </Layouts.app>
     """
   end
