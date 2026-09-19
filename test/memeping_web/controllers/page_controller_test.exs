@@ -14,6 +14,9 @@ defmodule MemePingWeb.PageControllerTest do
 
     assert html =~ "Catch every memecoin call"
     assert html =~ ~s(<link rel="icon" href="/favicon.ico" type="image/x-icon">)
+    assert html =~ ~s(href="https://github.com/nablem/memeping")
+    assert html =~ "This is an"
+    assert html =~ "open source project"
     assert length(json_ld) == 2
     software_application = Enum.find(json_ld, &(&1["@type"] == "SoftwareApplication"))
 
