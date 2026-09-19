@@ -1,6 +1,6 @@
 <Layouts.flash_group flash={@flash} />
 <script :for={data <- structured_data()} type="application/ld+json">
-  {raw(Jason.encode!(data))}
+  <%= raw(Jason.encode!(data)) %>
 </script>
 
 <div class="min-h-screen bg-base-100">
@@ -20,7 +20,7 @@
       Log in
     </.link>
   </header>
-  
+
   <section class="px-4 sm:px-6 lg:px-8 pt-10 pb-20 sm:pt-16 sm:pb-28">
     <div class="mx-auto max-w-3xl text-center space-y-6">
       <span class="badge badge-secondary text-primary font-semibold">
@@ -30,107 +30,108 @@
         Catch every memecoin call that matches <span class="text-primary">your</span>
         rules, the second it happens.
       </h1>
-      
+
       <p class="text-base sm:text-lg text-base-content/70 max-w-2xl mx-auto">
         MemePing watches DEX Screener around the clock and pings your Telegram the moment a token
         matches the chain, thresholds, and forbidden-term filters you set — so you never have to
         babysit a chart again.
       </p>
-      
+
       <div class="flex flex-wrap justify-center gap-3">
         <.link
           navigate={if @current_user, do: ~p"/notifiers", else: ~p"/login"}
           class="btn btn-primary"
         >
           Get started free
-        </.link> <a href="#plans" class="btn btn-ghost">See plans</a>
+        </.link>
+         <a href="#plans" class="btn btn-ghost">See plans</a>
       </div>
     </div>
   </section>
-  
+
   <section class="px-4 sm:px-6 lg:px-8 pb-20">
     <div class="mx-auto max-w-5xl grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-box border border-base-300 p-6 space-y-3">
         <.icon name="hero-bolt" class="size-8 text-primary" />
         <h2 class="font-semibold">Real-time monitoring</h2>
-        
+
         <p class="text-sm text-base-content/70">
           Constantly scans DEX Screener across chains so no matching call slips through.
         </p>
       </div>
-      
+
       <div class="rounded-box border border-base-300 p-6 space-y-3">
         <.icon name="hero-adjustments-horizontal" class="size-8 text-primary" />
         <h2 class="font-semibold">Custom thresholds</h2>
-        
+
         <p class="text-sm text-base-content/70">
           Set min/max bounds on market cap, liquidity, volume, price change, and more.
         </p>
       </div>
-      
+
       <div class="rounded-box border border-base-300 p-6 space-y-3">
         <.icon name="hero-shield-exclamation" class="size-8 text-primary" />
         <h2 class="font-semibold">Forbidden-term filters</h2>
-        
+
         <p class="text-sm text-base-content/70">
           Exclude tokens whose names match your own case-insensitive regex patterns.
         </p>
       </div>
-      
+
       <div class="rounded-box border border-base-300 p-6 space-y-3">
         <.icon name="hero-paper-airplane" class="size-8 text-primary" />
         <h2 class="font-semibold">Instant Telegram delivery</h2>
-        
+
         <p class="text-sm text-base-content/70">
           Every match is posted straight to the Telegram channel you connect.
         </p>
       </div>
     </div>
   </section>
-  
+
   <section class="px-4 sm:px-6 lg:px-8 pb-20">
     <div class="mx-auto max-w-5xl space-y-10">
       <div class="text-center space-y-2">
         <h2 class="text-2xl sm:text-3xl font-semibold">Connect in seconds, no signup required</h2>
-        
+
         <p class="text-base-content/70 max-w-2xl mx-auto">
           Log in by signing a message with MetaMask or Phantom — no email, no password, no forms.
           You can start receiving your first calls within seconds of connecting.
         </p>
       </div>
-      
+
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="rounded-box border border-base-300 p-6 flex items-center gap-4">
           <.icon name="hero-link" class="size-8 text-primary shrink-0" />
           <div>
             <h3 class="font-semibold">MetaMask</h3>
-            
+
             <p class="text-sm text-base-content/70">Sign in with any EVM-compatible wallet.</p>
           </div>
         </div>
-        
+
         <div class="rounded-box border border-base-300 p-6 flex items-center gap-4">
           <.icon name="hero-link" class="size-8 text-primary shrink-0" />
           <div>
             <h3 class="font-semibold">Phantom</h3>
-            
+
             <p class="text-sm text-base-content/70">Sign in with your Solana wallet.</p>
           </div>
         </div>
       </div>
-      
+
       <div class="rounded-box bg-base-200 p-6 text-center space-y-2">
         <h3 class="font-semibold">No subscriptions, ever</h3>
-        
+
         <p class="text-sm text-base-content/70 max-w-2xl mx-auto">
           Plans are prepaid per 30-day period, with no recurring billing and no auto-renewal.
           Pay upfront, use it for as long as you chose, then renew only if you want to.
         </p>
       </div>
-      
+
       <div class="text-center space-y-3">
         <h3 class="font-semibold">Supported chains</h3>
-        
+
         <div class="flex flex-wrap justify-center gap-2">
           <span class="badge badge-secondary text-primary">Solana</span>
           <span class="badge badge-secondary text-primary">Ethereum</span>
@@ -141,17 +142,17 @@
       </div>
     </div>
   </section>
-  
+
   <section id="plans" class="px-4 sm:px-6 lg:px-8 pb-24">
     <div class="mx-auto max-w-5xl space-y-8">
       <div class="text-center space-y-2">
         <h2 class="text-2xl sm:text-3xl font-semibold">Plans for every level of degen</h2>
-        
+
         <p class="text-base-content/70">
           Start free, upgrade whenever you need more notifiers, channels, or filters.
         </p>
       </div>
-      
+
       <div class="grid gap-4 sm:grid-cols-3">
         <div
           :for={plan <- Plan.all()}
@@ -159,22 +160,22 @@
         >
           <div>
             <h3 class="text-lg font-semibold">{plan.name}</h3>
-            
+
             <p class="text-2xl font-semibold mt-2">{price_label(plan)}</p>
-            
+
             <p class="text-xs opacity-70">
               {if plan.duration_days, do: "prepaid, no auto-renewal", else: "\u00A0"}
             </p>
           </div>
-          
+
           <ul class="text-sm space-y-1 flex-1">
             <li>{limit_label(plan.notifier_limit, "notifier")}</li>
-            
+
             <li>{limit_label(plan.telegram_channel_limit, "Telegram channel")}</li>
-            
+
             <li>{term_list_limit_label(plan.term_list_limit)}</li>
           </ul>
-          
+
           <.link
             navigate={if @current_user, do: ~p"/plans", else: ~p"/login"}
             class="btn btn-primary btn-sm w-full"
@@ -185,7 +186,7 @@
       </div>
     </div>
   </section>
-  
+
   <footer class="px-4 sm:px-6 lg:px-8 py-8 border-t border-base-300 text-center text-sm text-base-content/60">
     <span class="font-cursive text-primary">MemePing</span> · Never miss a call again.
   </footer>

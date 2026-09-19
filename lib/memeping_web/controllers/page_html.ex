@@ -54,19 +54,24 @@ defmodule MemePingWeb.PageHTML do
   end
 
   defp plan_offer_json_ld(plan) do
-    %{
+    offer = %{
       "@type" => "Offer",
       "name" => plan.name,
       "price" => plan.price_cents / 100,
-      "priceCurrency" => "USD",
-      "priceSpecification" => %{
+      "priceCurrency" => "USD"
+    }
+
+    if plan.duration_days do
+      Map.put(offer, "priceSpecification", %{
         "@type" => "UnitPriceSpecification",
         "price" => plan.price_cents / 100,
         "priceCurrency" => "USD",
-        "billingDuration" => plan.duration_days || 30,
+        "billingDuration" => "P#{plan.duration_days}D",
         "unitCode" => "DAY"
-      }
-    }
+      })
+    else
+      offer
+    end
   end
 
   defp absolute_url(path), do: MemePingWeb.Endpoint.url() <> path
